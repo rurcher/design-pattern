@@ -1,0 +1,40 @@
+cmake_minimum_required(VERSION 3.9)
+
+PROJECT (visitor_factory)
+
+# 查找当前目录下的所有源文件
+# 并将名称保存到 DIR_SRCS 变量
+aux_source_directory(${PROJECT_SOURCE_DIR} VISITOR_FACTORY_SRC)
+
+if(NOT DEFINED ENV{WORKSPACE_BUILD_PATH})
+	message(FATAL_ERROR "can't defined environment variable:WORKSPACE_BUILD_PATH")
+else()
+	set(WORKSPACE_BUILD_PATH $ENV{WORKSPACE_BUILD_PATH})
+endif(NOT DEFINED ENV{WORKSPACE_BUILD_PATH})
+
+# 添加动态库
+ADD_LIBRARY(visitor_factory_lib SHARED ${VISITOR_FACTORY_SRC})
+TARGET_INCLUDE_DIRECTORIES(visitor_factory_lib PUBLIC ${PROJECT_SOURCE_DIR})
+# 添加静态库
+ADD_LIBRARY(visitor_factory_static_lib STATIC ${VISITOR_FACTORY_SRC})
+TARGET_INCLUDE_DIRECTORIES(visitor_factory_static_lib PUBLIC ${PROJECT_SOURCE_DIR})
+
+
+# make install 路径配置:
+IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+	install(TARGETS visitor_factory_lib visitor_factory_static_lib
+		RUNTIME DESTINATION ${WORKSPACE_BUILD_PATH}/visitor/bin
+		LIBRARY DESTINATION ${WORKSPACE_BUILD_PATH}/visitor/lib
+		ARCHIVE DESTINATION ${WORKSPACE_BUILD_PATH}/visitor/lib
+	)
+	file(GLOB VISITOR_FACTORY_INCLUDE ${PROJECT_SOURCE_DIR}/*.h)
+	install(FILES ${VISITOR_FACTORY_INCLUDE} DESTINATION ${WORKSPACE_BUILD_PATH}/visitor/include)
+ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Windows")
+	install(TARGETS visitor_factory_lib visitor_factory_static_lib
+		RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/windows/bin
+		LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/windows/lib
+		ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/windows/lib
+	)
+	file(GLOB VISITOR_FACTORY_INCLUDE ${PROJECT_SOURCE_DIR}/*.h)
+	install(FILES ${VISITOR_FACTORY_INCLUDE} DESTINATION ${PROJECT_SOURCE_DIR}/windows/include)
+ENDIF (CMAKE_SYSTEM_NAME MATCHES "Linux")
